@@ -1,20 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import { useDispatch } from "react-redux";
-import { createUser } from "./GlobalState";
+import pix from "./d.jpg";
 
-const SignIn = () => {
+const Regular = () => {
 	const navigate = useNavigate();
-	const dispatch = useDispatch();
+	const [image, setImage] = useState(pix);
+	const [avatar, setAvatar] = useState("");
+	const [mgs, setMsg] = useState("");
 
 	const formSchema = yup.object().shape({
+		userName: yup.string().required("This field cannot be empty"),
 		email: yup.string().email().required("This field cannot be empty"),
 		password: yup.string().required("This field cannot be empty"),
+		confirm: yup
+			.string()
+			.oneOf([yup.ref("password"), null], "Password must match"),
 	});
 
 	const {
@@ -26,29 +31,74 @@ const SignIn = () => {
 		resolver: yupResolver(formSchema),
 	});
 
+	const handleImage = (e) => {
+		const file = e.target.files[0];
+		const save = URL.createObjectURL(file);
+		setImage(save);
+		setAvatar(file);
+	};
+
 	const onSubmit = handleSubmit(async (value) => {
 		console.log(value);
-		const { email, password } = value;
-
+		const { userName, email, password } = value;
 		const main = "http://localhost:1222";
 		const online = "https://authbuild.herokuapp.com";
 
-		const url = `${online}/api/user/signin`;
-		// const url = "http://localhost:1222/api/user/signin";
+		const url = `${online}/api/user/create`;
 
-		await axios.post(url, { email, password }).then((res) => {
-			console.log(res.data.data);
-			dispatch(createUser(res.data.data));
+		const formData = new FormData();
+		formData.append("userName", userName);
+		formData.append("email", email);
+		formData.append("password", password);
+		formData.append("avatar", avatar);
+
+		const config = {
+			"content-type": "multipart/form-data",
+			onUploadProgress: (ProgressEvent) => {
+				const { loaded, total } = ProgressEvent;
+				const percent = Math.floor((loaded * 100) / total);
+				console.log(percent);
+			},
+		};
+
+		const options = {
+			onUploadProgress: (ProgressEvent) => {
+				const { loaded, total } = ProgressEvent;
+				const percent = Math.floor((loaded * 100) / total);
+				console.log(percent);
+			},
+		};
+
+		await axios.post(url, formData, config).then((res) => {
+			setMsg(res.data.message);
+			console.log("Error Data: ", res);
 		});
 
-		navigate("/developer");
+		// navigate("/signup/signin");
 	});
 
 	return (
 		<Container>
 			<Wrapper>
 				<Card>
-					<Form onSubmit={onSubmit}>
+					<ImageHolder>
+						<DivTag>Signing up as a Regular user!</DivTag>
+						<Image src={image} />
+						<ImageLabel htmlFor="pix">Upload your Image</ImageLabel>
+						<ImageInput
+							id="pix"
+							onChange={handleImage}
+							type="file"
+							accept="image/*"
+						/>
+					</ImageHolder>
+
+					<Form onSubmit={onSubmit} type="multipart/form-data">
+						<Holder>
+							<Label>User Name</Label>
+							<Input placeholder="userName" {...register("userName")} />
+							<Error>{errors.message && errors?.message.userName}</Error>
+						</Holder>
 						<Holder>
 							<Label>Email</Label>
 							<Input placeholder="email" {...register("email")} />
@@ -59,10 +109,16 @@ const SignIn = () => {
 							<Input placeholder="Password" {...register("password")} />
 							<Error>{errors.message && errors?.message.password}</Error>
 						</Holder>
+						<Holder>
+							<Label>Confirm Password</Label>
+							<Input placeholder="Confirm Password" {...register("confirm")} />
+							<Error>{errors.message && errors?.message.confirm}</Error>
+						</Holder>
 
-						<Button type="submit">Sign in</Button>
+						<Button type="submit">Register</Button>
+						<Error>{mgs}</Error>
 						<Div>
-							Don't have an Account? <Span to="/signup">Sign up Here</Span>
+							Already have an Account? <Span to="signin">Sign in Here</Span>
 						</Div>
 					</Form>
 				</Card>
@@ -71,7 +127,14 @@ const SignIn = () => {
 	);
 };
 
-export default SignIn;
+export default Regular;
+
+const DivTag = styled.div`
+	margin-bottom: 20px;
+	color: #004080;
+	text-transform: uppercase;
+	font-weight: 500;
+`;
 
 const Span = styled(Link)`
 	margin-left: 5px;
@@ -186,8 +249,7 @@ const Card = styled.div`
 	box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
 		rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
 	width: 500px;
-	min-height: 300px;
-	/* height: 100%; */
+	min-height: 650px;
 	border-radius: 5px;
 	display: flex;
 	justify-content: center;

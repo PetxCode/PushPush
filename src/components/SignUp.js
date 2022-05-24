@@ -5,10 +5,11 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import axios from "axios";
+import pix from "./d.jpg";
 
 const SignUp = () => {
 	const navigate = useNavigate();
-	const [image, setImage] = useState("");
+	const [image, setImage] = useState(pix);
 	const [avatar, setAvatar] = useState("");
 	const [mgs, setMsg] = useState("");
 
@@ -40,7 +41,10 @@ const SignUp = () => {
 	const onSubmit = handleSubmit(async (value) => {
 		console.log(value);
 		const { userName, email, password } = value;
-		const url = "http://localhost:1222/api/user/createDev";
+		const main = "http://localhost:1222";
+		const online = "https://authbuild.herokuapp.com";
+
+		const url = `${online}/api/user/createDev`;
 
 		const formData = new FormData();
 		formData.append("userName", userName);
@@ -78,6 +82,7 @@ const SignUp = () => {
 			<Wrapper>
 				<Card>
 					<ImageHolder>
+						<DivTag>Signing up as a Developer!</DivTag>
 						<Image src={image} />
 						<ImageLabel htmlFor="pix">Upload your Image</ImageLabel>
 						<ImageInput
@@ -129,6 +134,13 @@ const Span = styled(Link)`
 	text-decoration: none;
 	color: darkorange;
 	cursor: pointer;
+`;
+
+const DivTag = styled.div`
+	margin-bottom: 20px;
+	color: #004080;
+	text-transform: uppercase;
+	font-weight: 500;
 `;
 
 const Div = styled.div`

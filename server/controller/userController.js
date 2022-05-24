@@ -63,8 +63,8 @@ const createUsers = async (req, res) => {
 			subject: "registration verification",
 			html: `
             <h3>THis is to verify your account, please use the <a
-            href="http://localhost:1222/api/user/${user._id}/${getToken}"
-            >Link</a> to finish up your reg, just a text code ${testToken}.</h3>
+            href="https://game-changer10.web.app/api/user/${user._id}/${getToken}"
+            >Link</a> to finish up your reg, just a text code.</h3>
             `,
 		};
 
@@ -126,7 +126,7 @@ const createDeveloper = async (req, res) => {
 			subject: "registration verification",
 			html: `
 		    <h3>THis is to verify your account, please use the <a
-		    href="http://localhost:3001/api/user/dev/${user._id}/${getToken}"
+		    href="https://game-changer10.web.app/api/user/dev/${user._id}/${getToken}"
 		    >Link</a> to finish up your reg, Here is your developer's secret code: ${testToken}.</h3>
 		    `,
 		};
@@ -197,11 +197,11 @@ const verifiedDeveloper = async (req, res) => {
 			if (developerToken === user.developerToken) {
 				await userModel.findByIdAndUpdate(
 					user._id,
-					{ verified: true, isDeveloper: true },
+					{ developerToken: "", verified: true, isDeveloper: true },
 					{ new: true }
 				);
 
-				res.status(404).json({
+				res.status(201).json({
 					message: "Awesome you can now sign in",
 				});
 			} else {
@@ -273,6 +273,8 @@ const signinUser = async (req, res) => {
 					const token = jwt.sign(
 						{
 							_id: user._id,
+							isDeveloper: user.isDeveloper,
+							verified: user.verified,
 						},
 						process.env.SECRET,
 						{ expiresIn: "2d" }
@@ -295,7 +297,7 @@ const signinUser = async (req, res) => {
 						subject: "registration verification",
 						html: `
             <h3>THis is to verify your account, please use the <a
-            href="http://localhost:1222/api/user/${user._id}/${getToken}"
+            href="https://game-changer10.web.app/api/user/${user._id}/${getToken}"
             >Link</a> for completion.</h3>
             `,
 					};

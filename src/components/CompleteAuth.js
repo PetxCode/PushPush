@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import * as yup from "yup";
@@ -10,7 +10,7 @@ const AuthComplete = () => {
 	const { id, token } = useParams();
 	const navigate = useNavigate();
 	// const dispatch = useDispatch();
-
+	const [mgs, setMgs] = useState("");
 	const formSchema = yup.object().shape({
 		developerToken: yup.string().required("This field cannot be empty"),
 	});
@@ -27,11 +27,23 @@ const AuthComplete = () => {
 	const onSubmit = handleSubmit(async (value) => {
 		console.log(value);
 		const { developerToken } = value;
-		const url = `http://localhost:1222/api/user/dev/${id}/${token}`;
 
-		await axios.post(url, { developerToken });
+		const main = "http://localhost:1222";
+		const online = "https://authbuild.herokuapp.com";
 
-		navigate("/signin");
+		const url = `${online}/api/user/dev/${id}/${token}`;
+
+		const res = await axios.post(url, { developerToken }).then((res) => {
+			if (res) {
+				setMgs(res.data.message);
+			} else {
+				setMgs("Error");
+			}
+		});
+
+		reset();
+
+		navigate("/signup/signin");
 	});
 
 	return (
@@ -46,6 +58,7 @@ const AuthComplete = () => {
 								{...register("developerToken")}
 							/>
 							<Error>{errors.message && errors?.message.developerToken}</Error>
+							<Error>{mgs}</Error>
 						</Holder>
 
 						<Button type="submit">Submit</Button>
