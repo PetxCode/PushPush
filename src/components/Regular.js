@@ -5,7 +5,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import pix from "./d.jpg";
+import pix from "./car.gif";
 
 const Regular = () => {
 	const navigate = useNavigate();
